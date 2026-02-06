@@ -1,0 +1,76 @@
+import { StyleSheet } from "react-native";
+
+export default StyleSheet.create({
+  container: {
+    minHeight: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f7fa",
+    padding: 20,
+  },
+  card: {
+    width: "100%",
+    maxWidth: 400,
+    backgroundColor: "white",
+    padding: 30,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 3,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "700",
+    marginBottom: 30,
+    textAlign: "center",
+    userSelect: "none",
+  },
+  input: {
+    width: "100%",
+    backgroundColor: "#f3f4f6",
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+  },
+  errorBox: {
+    backgroundColor: "#fee2e2",
+    borderColor: "#fecaca",
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  errorText: {
+    color: "#b91c1c",
+    fontSize: 14,
+  },
+  primaryButton: {
+    marginTop: 20,
+    backgroundColor: "#2563eb",
+    paddingVertical: 12,
+    borderRadius: 10,
+  },
+  primaryButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  secondaryButton: {
+    marginTop: 15,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    backgroundColor: "#e5e7eb",
+  },
+  secondaryButtonText: {
+    color: "#111827",
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "center",
+  },
+});
