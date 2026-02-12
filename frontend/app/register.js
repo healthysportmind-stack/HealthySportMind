@@ -102,7 +102,7 @@ export default function RegisterScreen() {
 
         <TouchableOpacity
           style={styles.secondaryButton}
-          onPress={() => router.push("/")}
+          onPress={() => router.replace("/")}
         >
           <Text style={styles.secondaryButtonText}>
             Already have an account? Login

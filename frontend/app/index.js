@@ -28,7 +28,7 @@ export default function LoginScreen() {
         return;
       }
 
-      router.push("/dashboard");
+      router.replace("/dashboard");
 
     } catch {
       setError("Network error. Try again.");
@@ -72,7 +72,7 @@ export default function LoginScreen() {
 
         <TouchableOpacity
           style={styles.secondaryButton}
-          onPress={() => router.push("/register")}
+          onPress={() => router.replace("/register")}
         >
           <Text style={styles.secondaryButtonText}>
             Need an account? Sign Up
