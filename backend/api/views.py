@@ -7,6 +7,13 @@ import requests
 import feedparser
 from bs4 import BeautifulSoup
 from django.http import JsonResponse
+from datetime import date
+from rest_framework.permissions import IsAuthenticated
+from .serializers.checkinSerializers import CheckInSerializer
+from .models import CheckIn
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
+
 
 
 class RegisterView(APIView):
@@ -26,12 +33,9 @@ class RegisterView(APIView):
         return Response({"message": "User created successfully"}, status=201)
 
 
-
-
-
-
-
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
@@ -41,14 +45,13 @@ class LoginView(APIView):
         if user is None:
             return Response({"error": "Invalid email or password"}, status=400)
 
-        return Response({"message": "Login successful"}, status=200)
+        refresh = RefreshToken.for_user(user)
 
-
-
-
-
-
-
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "message": "Login successful"
+        }, status=200)
 
 def extract_image(entry):
     media = entry.get("media_content")
@@ -102,6 +105,55 @@ def rss_proxy(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+class SubmitCheckInView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+       # print("AUTH HEADER:", request.headers.get("Authorization"))
+       # print("USER:", request.user)
+        print("DATA RECEIVED:", request.data)
+        serializer = CheckInSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+
+            message = "Thanks for checking in today."
+
+            return Response({
+                "checkin": serializer.data,
+                "message": message
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class TodayCheckInView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        today = date.today()
+        checkin = CheckIn.objects.filter(
+            user=request.user,
+            created_at__date=today
+        ).first()
+
+        if not checkin:
+            return Response({"exists": False})
+
+        return Response({
+            "exists": True,
+            "checkin": CheckInSerializer(checkin).data
+        })
+
+
+class LastCheckInView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        last = CheckIn.objects.filter(user=request.user).order_by("-created_at").first()
+
+        if not last:
+            return Response({"exists": False})
+
+        return Response({
+            "exists": True,
+            "checkin": CheckInSerializer(last).data
+        })

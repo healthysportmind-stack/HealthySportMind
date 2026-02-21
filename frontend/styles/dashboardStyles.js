@@ -142,4 +142,18 @@ export default StyleSheet.create({
       color: "white",
       fontWeight: "800",
     },
+  checkInButton: {
+  backgroundColor: "#007AFF",
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  borderRadius: 8,
+  marginTop: 6,
+  alignSelf: "flex-start",
+},
+checkInButtonText: {
+  color: "white",
+  fontWeight: "600",
+  fontSize: 14,
+},
+  
 });

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../services/api/authApi";
 import styles from "../styles/authStyles";
 
@@ -22,11 +23,15 @@ export default function LoginScreen() {
 
     try {
       const data = await loginUser(email, password);
+      console.log("LOGIN RESPONSE:", data);
 
       if (data.error) {
         setError(data.error);
         return;
       }
+      AsyncStorage.clear();
+      await AsyncStorage.setItem("accessToken", data.access);
+      await AsyncStorage.setItem("refreshToken", data.refresh);
 
       router.replace("/dashboard");
 
