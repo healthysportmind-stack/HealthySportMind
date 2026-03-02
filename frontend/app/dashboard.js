@@ -1,10 +1,11 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { ScrollView, Text, TouchableOpacity, View, Image, Linking } from "react-native";
 import { useState, useEffect } from "react";
 import styles from "../styles/dashboardStyles";
 import { fetchRSS } from "../hooks/fetchRSS";
 import { useRouter } from "expo-router";
+
 
 export default function Dashboard({ user, profile }) {
   const router = useRouter();
@@ -12,7 +13,37 @@ export default function Dashboard({ user, profile }) {
   const [lastCheckIn, setLastCheckIn] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  async function loadLastCheckIn() {
+        try {
+          const token = await AsyncStorage.getItem("accessToken");
+          const res = await fetch("http://127.0.0.1:8000/api/checkins/last/", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const data = await res.json();
+          console.log("LAST CHECK-IN RAW RESPONSE:", data);
+          setLastCheckIn(data);
+        } catch (err) {
+          console.error("Last check-in fetch error:", err);
+        }
+      }
+  
+    async function loadCheckIn() {
+      try {
+        const token = await AsyncStorage.getItem("accessToken");
+        const res = await fetch("http://127.0.0.1:8000/api/checkins/today/", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        console.log("TODAY CHECK-IN RAW:", data);
+        setTodayCheckIn(data);
+      } catch (err) {
+        console.error("Check-in fetch error:", err);
+      }
+    }    
   useEffect(() => {
     async function load() {
       try {
@@ -25,38 +56,6 @@ export default function Dashboard({ user, profile }) {
       }
     }
     load();
-
-    async function loadLastCheckIn() {
-      try {
-        const token = await AsyncStorage.getItem("accessToken");
-        const res = await fetch("http://127.0.0.1:8000/api/checkins/last/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        console.log("LAST CHECK-IN RAW RESPONSE:", data);
-        setLastCheckIn(data);
-      } catch (err) {
-        console.error("Last check-in fetch error:", err);
-      }
-    }
-
-    async function loadCheckIn() {
-      try {
-        const token = await AsyncStorage.getItem("accessToken");
-        const res = await fetch("http://127.0.0.1:8000/api/checkins/today/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        setTodayCheckIn(data);
-      } catch (err) {
-        console.error("Check-in fetch error:", err);
-      }
-    }
-
     loadCheckIn();
     loadLastCheckIn();
   }, []);
@@ -102,20 +101,27 @@ export default function Dashboard({ user, profile }) {
           {/* Daily Check-In */}
           <View style={styles.infoCard}>
             <Text style={styles.cardTitle}>Daily Check‑In</Text>
-
-            {todayCheckIn?.exists ? (
+          {todayCheckIn?.exists ? (
+            <View>
               <Text style={styles.cardSubtitle}>You checked in today!</Text>
-            ) : (
-              <TouchableOpacity
-                style={styles.checkInButton}
-                onPress={() => router.push("/checkin")}
-              >
-                <Text style={styles.checkInButtonText}>
-                  Complete today’s check‑in
+
+              {todayCheckIn.checkin?.post_message && (
+                <Text style={styles.cardSubtitle}>
+                  {todayCheckIn.checkin.post_message}
                 </Text>
-              </TouchableOpacity>
-            )}
-          </View>
+              )}
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.checkInButton}
+              onPress={() => router.push("/checkin")}
+            >
+              <Text style={styles.checkInButtonText}>
+                Complete today’s check‑in
+              </Text>
+            </TouchableOpacity>
+          )}
+                    </View>
 
           {/* Last Check-In */}
           <View style={styles.infoCard}>

@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 import requests
@@ -13,8 +13,11 @@ from .serializers.checkinSerializers import CheckInSerializer
 from .models import CheckIn
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
+from django.utils import timezone
 
-
+from .models import Profile, CheckIn
+from .serializers.profileSerializer import ProfileSerializer
+from .services.message_generator import generate_post_checkin_message
 
 class RegisterView(APIView):
     def post(self, request):
@@ -29,6 +32,8 @@ class RegisterView(APIView):
             email=email,
             password=password
         )
+
+        Profile.objects.create(user=user)
 
         return Response({"message": "User created successfully"}, status=201)
 
@@ -110,15 +115,16 @@ class SubmitCheckInView(APIView):
     def post(self, request):
        # print("AUTH HEADER:", request.headers.get("Authorization"))
        # print("USER:", request.user)
-        print("DATA RECEIVED:", request.data)
+       # print("DATA RECEIVED:", request.data)
         serializer = CheckInSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            checkin = serializer.save(user=request.user)
 
-            message = "Thanks for checking in today."
-
+            message = generate_post_checkin_message(checkin)
+            checkin.post_message = message
+            checkin.save()
             return Response({
-                "checkin": serializer.data,
+                "checkin": CheckInSerializer(checkin).data,
                 "message": message
             }, status=status.HTTP_201_CREATED)
 
@@ -129,7 +135,7 @@ class TodayCheckInView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        today = date.today()
+        today = timezone.localdate()
         checkin = CheckIn.objects.filter(
             user=request.user,
             created_at__date=today
@@ -157,3 +163,19 @@ class LastCheckInView(APIView):
             "exists": True,
             "checkin": CheckInSerializer(last).data
         })
+
+
+class ProfileMeView(generics.RetrieveAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user.profile
+
+
+class ProfileUpdateView(generics.UpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user.profile

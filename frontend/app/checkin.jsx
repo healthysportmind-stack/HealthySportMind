@@ -60,7 +60,8 @@ export default function CheckInScreen() {
         text1: "Check‑in submitted!",
       });
 
-      router.back();
+      router.replace("/dashboard");
+
 
     } catch (err) {
       Toast.show({

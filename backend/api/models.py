@@ -11,6 +11,8 @@ class CheckIn(models.Model):
     sleep_hours = models.FloatField()
     notes = models.TextField(blank=True, null=True)
 
+    post_message = models.TextField(blank = True, null = True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -20,3 +22,25 @@ class CheckIn(models.Model):
     def __str__(self):
         return f"{self.user.email} - {self.created_at.date()}"
 
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    # Personal Info
+    name = models.CharField(max_length=100, blank=True)
+    sport = models.CharField(max_length=100, blank=True)
+    experience_level = models.CharField(
+        max_length=20,
+        choices=[
+            ("beginner", "Beginner"),
+            ("intermediate", "Intermediate"),
+            ("advanced", "Advanced"),
+        ],
+        default="beginner"
+    )
+
+    # Training
+    preferred_checkin_time = models.TimeField(null=True, blank=True)
+    training_days = models.JSONField(default=list, blank=True)
+    goals = models.TextField(blank=True)
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
