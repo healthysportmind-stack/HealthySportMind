@@ -14,6 +14,7 @@ from .models import CheckIn
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
+from api.utils.ai import rewrite_message_tone
 
 from .models import Profile, CheckIn
 from .serializers.profileSerializer import ProfileSerializer
@@ -120,12 +121,20 @@ class SubmitCheckInView(APIView):
         if serializer.is_valid():
             checkin = serializer.save(user=request.user)
 
-            message = generate_post_checkin_message(checkin)
-            checkin.post_message = message
+            base_message = generate_post_checkin_message(checkin)
+            #checkin.post_message=base_message # this is to test without ai. comment out the next 6 lines.
+            #change base final_message to base_message in line 136
+            tone=getattr(request.user.profile, "preferred_tone", "neutral")
+            try:
+                final_message=rewrite_message_tone(base_message,tone)
+            except Exception as e:
+                print("AI REWRITE ERROR:", e)
+                final_message = base_message
+            checkin.post_message = final_message
             checkin.save()
             return Response({
                 "checkin": CheckInSerializer(checkin).data,
-                "message": message
+                "message": final_message
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
