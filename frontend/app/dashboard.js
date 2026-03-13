@@ -6,6 +6,7 @@ import styles from "../styles/dashboardStyles";
 import { fetchRSS } from "../hooks/fetchRSS";
 import { useRouter } from "expo-router";
 import { getTodayCheckIn, getLastCheckIn } from "../services/api/checkinApi";
+import { getProfile } from "../services/api/profileApi";
 
 
 export default function Dashboard({ user, profile }) {
@@ -28,6 +29,16 @@ export default function Dashboard({ user, profile }) {
           console.error("Last check-in fetch error:", err);
         }
       }
+  
+  async function reloadProfile() {
+    try {
+      const data = await getProfile();
+      setLocalProfile(data);
+      await AsyncStorage.setItem("profile", JSON.stringify(data));
+    } catch (err) {
+      console.error("Profile reload error:", err);
+    }
+  }
 
 
     async function loadCheckIn() {
@@ -70,10 +81,10 @@ export default function Dashboard({ user, profile }) {
     if (isFocused) {
       loadCheckIn();
       loadLastCheckIn();
+      reloadProfile();
     }
   }, [isFocused]);
 
-  const navigation = useNavigation();
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem("accessToken");
@@ -117,7 +128,7 @@ export default function Dashboard({ user, profile }) {
           <View style={styles.infoCard}>
             <Text style={styles.cardTitle}>Your Sport</Text>
             <Text style={styles.cardValue}>
-              {profile?.sport || "No sport set"}
+              {localProfile?.sport || "No sport set"}
             </Text>
           </View>
 
