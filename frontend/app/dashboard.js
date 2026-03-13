@@ -1,49 +1,45 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { ScrollView, Text, TouchableOpacity, View, Image, Linking } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import styles from "../styles/dashboardStyles";
 import { fetchRSS } from "../hooks/fetchRSS";
 import { useRouter } from "expo-router";
+import { getTodayCheckIn, getLastCheckIn } from "../services/api/checkinApi";
 
 
 export default function Dashboard({ user, profile }) {
   const router = useRouter();
+  const isFocused = useIsFocused();
   const [todayCheckIn, setTodayCheckIn] = useState(null);
   const [lastCheckIn, setLastCheckIn] = useState(null);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [localProfile, setLocalProfile] = useState(null);
+  const [localUser, setLocalUser] = useState(null);
+  const [tokenready, setTokenReady] = useState(false);
+
   async function loadLastCheckIn() {
         try {
-          const token = await AsyncStorage.getItem("accessToken");
-          const res = await fetch("http://127.0.0.1:8000/api/checkins/last/", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          const data = await res.json();
+          const data = await getLastCheckIn();
           console.log("LAST CHECK-IN RAW RESPONSE:", data);
           setLastCheckIn(data);
         } catch (err) {
           console.error("Last check-in fetch error:", err);
         }
       }
-  
+
+
     async function loadCheckIn() {
       try {
-        const token = await AsyncStorage.getItem("accessToken");
-        const res = await fetch("http://127.0.0.1:8000/api/checkins/today/", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
+        const data = await getTodayCheckIn();
         console.log("TODAY CHECK-IN RAW:", data);
         setTodayCheckIn(data);
       } catch (err) {
         console.error("Check-in fetch error:", err);
       }
-    }    
+    }
+
   useEffect(() => {
     async function load() {
       try {
@@ -55,16 +51,33 @@ export default function Dashboard({ user, profile }) {
         setLoading(false);
       }
     }
+    async function loadStoredData() {
+      const storedProfile = await AsyncStorage.getItem("profile");
+      const storedUser = await AsyncStorage.getItem("user");
+      const token = await AsyncStorage.getItem("accessToken");
+
+      if (storedProfile) setLocalProfile(JSON.parse(storedProfile));
+      if (storedUser) setLocalUser(JSON.parse(storedUser));
+      if (token) setTokenReady(true);
+    }
+
+    loadStoredData();
     load();
     loadCheckIn();
     loadLastCheckIn();
   }, []);
+  useEffect(() => {
+    if (isFocused) {
+      loadCheckIn();
+      loadLastCheckIn();
+    }
+  }, [isFocused]);
 
   const navigation = useNavigation();
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem("accessToken");
-    navigation.replace("index");
+    router.replace("/");
   };
 
   return (
@@ -73,15 +86,25 @@ export default function Dashboard({ user, profile }) {
       <View style={styles.topBar}>
         <Text style={styles.title}>HealthySportMind</Text>
 
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <TouchableOpacity
+            style={styles.settingsButton}
+            onPress={() => router.push("/settings")}
+          >
+            <Text style={styles.settingsText}>Settings</Text>
+          </TouchableOpacity>
+
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
       </View>
+    </View>
 
       {/* Main Card */}
       <View style={styles.card}>
         <Text style={styles.welcome}>
-          Welcome, {profile?.email || user?.email}
+          Welcome, {localProfile?.name || localUser?.email}
         </Text>
 
         <Text style={styles.subtitle}>

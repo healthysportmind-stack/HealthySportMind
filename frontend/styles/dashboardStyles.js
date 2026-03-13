@@ -155,5 +155,17 @@ checkInButtonText: {
   fontWeight: "600",
   fontSize: 14,
 },
-  
+  settingsButton: {
+  backgroundColor: "#4B5563", // slate gray
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 8,
+},
+
+settingsText: {
+  color: "white",
+  fontWeight: "600",
+  fontSize: 14,
+},
+
 });

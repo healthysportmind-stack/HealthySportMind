@@ -29,9 +29,11 @@ export default function LoginScreen() {
         setError(data.error);
         return;
       }
-      AsyncStorage.clear();
       await AsyncStorage.setItem("accessToken", data.access);
       await AsyncStorage.setItem("refreshToken", data.refresh);
+      await AsyncStorage.setItem("profile", JSON.stringify(data.profile));
+      await AsyncStorage.setItem("user", JSON.stringify({ email }));
+
 
       router.replace("/dashboard");
 

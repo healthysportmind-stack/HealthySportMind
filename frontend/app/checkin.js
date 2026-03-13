@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { submitCheckIn } from "../services/api/checkinApi";
 import {
   View,
   Text,
@@ -22,54 +23,41 @@ export default function CheckInScreen() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const submitCheckIn = async () => {
-    try {
-      setLoading(true);
+  const handleSubmit = async () => {
+  try {
+    setLoading(true);
 
-      const token = await AsyncStorage.getItem("accessToken");
+    const data = await submitCheckIn({
+      mood,
+      stress,
+      energy,
+      sleep_hours: sleepHours,
+      notes,
+    });
 
-      const res = await fetch("http://127.0.0.1:8000/api/checkins/submit/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          mood,
-          stress,
-          energy,
-          sleep_hours: sleepHours,
-          notes,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        Toast.show({
-          type: "error",
-          text1: "Check‑In Failed",
-          text2: data.error || "Try again later.",
-        });
-
-        return;
-      }
-
-      Toast.show({
-        type: "success",
-        text1: "Check‑in submitted!",
-      });
-
-      router.replace("/dashboard");
-
-
-    } catch (err) {
+    if (data.error) {
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Something went wrong.",
+        text1: "Check‑In Failed",
+        text2: data.error,
       });
-      console.log(err);
+      return;
+    }
+
+    Toast.show({
+      type: "success",
+      text1: "Check‑in submitted!",
+    });
+
+    router.replace("/dashboard");
+
+  } catch (err) {
+    Toast.show({
+      type: "error",
+      text1: "Error",
+      text2: "Something went wrong.",
+    });
+    console.log(err);
   } finally {
     setLoading(false);
   }
@@ -150,7 +138,7 @@ return (
 
       {/* Submit Button */}
       <TouchableOpacity
-        onPress={submitCheckIn}
+        onPress={handleSubmit}
         disabled={loading}
         style={{
           backgroundColor: "#007AFF",

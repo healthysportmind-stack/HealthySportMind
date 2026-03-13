@@ -13,7 +13,7 @@ import styles from "../styles/authStyles";
 
 export default function RegisterScreen() {
   const router = useRouter();
-
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -39,6 +39,7 @@ export default function RegisterScreen() {
     const response = await registerUser({
       email,
       password,
+      name,
     });
 
     setSuccess("Registration successful! Redirecting...");
@@ -64,6 +65,13 @@ export default function RegisterScreen() {
     >
       <View style={styles.card}>
         <Text style={styles.title}>Create Account</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Name"
+          value={name}
+          onChangeText={setName}
+        />
 
         <TextInput
           style={styles.input}

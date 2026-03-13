@@ -16,16 +16,32 @@ def rewrite_message_tone(message, tone):
     "{message}"
     """
 
-    response = requests.post(
-        "https://api.groq.com/openai/v1/chat/completions",
-        headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
-        json={
-            "model": "llama-3.1-8b-instant",
-            "messages": [
-                {"role": "user", "content": prompt}
-            ]
-        }
-    )
+    if not GROQ_API_KEY:
+        print("AI REWRITE ERROR: missing GROQ_API_KEY")
+        return message
 
-    data = response.json()
-    return data["choices"][0]["message"]["content"].strip()
+    try:
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
+            json={
+                "model": "llama-3.1-8b-instant",
+                "messages": [
+                    {"role": "user", "content": prompt}
+                ]
+            },
+            timeout=15
+        )
+
+        data = response.json()
+
+        if "choices" not in data:
+            print("AI REWRITE ERROR:", data)
+            return message
+
+        rewritten = data["choices"][0]["message"]["content"].strip()
+        return rewritten
+
+    except Exception as e:
+        print("AI REWRITE ERROR:", e)
+        return message

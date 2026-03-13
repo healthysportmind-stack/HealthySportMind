@@ -20,10 +20,12 @@ from .models import Profile, CheckIn
 from .serializers.profileSerializer import ProfileSerializer
 from .services.message_generator import generate_post_checkin_message
 
+
 class RegisterView(APIView):
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
+        name = request.data.get("name", "")
 
         if User.objects.filter(email=email).exists():
             return Response({"error": "Email already exists"}, status=400)
@@ -34,7 +36,7 @@ class RegisterView(APIView):
             password=password
         )
 
-        Profile.objects.create(user=user)
+        Profile.objects.create(user=user,name=name)
 
         return Response({"message": "User created successfully"}, status=201)
 
@@ -53,9 +55,13 @@ class LoginView(APIView):
 
         refresh = RefreshToken.for_user(user)
 
+        profile = ProfileSerializer(user.profile).data
+        print("PROFILE DATA:", profile)
+
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
+            "profile": profile,
             "message": "Login successful"
         }, status=200)
 
