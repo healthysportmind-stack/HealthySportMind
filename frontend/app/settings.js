@@ -14,21 +14,17 @@ import Toast from "react-native-toast-message";
 export default function SettingsScreen() {
   const router = useRouter();
 
-  // Profile fields
   const [name, setName] = useState("");
   const [sport, setSport] = useState("");
 
-  // Tone
   const [tone, setTone] = useState("neutral");
 
-  // Notification toggles
   const [dailyReminder, setDailyReminder] = useState(false);
   const [weeklySummary, setWeeklySummary] = useState(false);
   const [motivationMsgs, setMotivationMsgs] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
-  // Load stored settings
   useEffect(() => {
     async function loadSettings() {
       const storedProfile = await AsyncStorage.getItem("profile");
@@ -55,18 +51,15 @@ export default function SettingsScreen() {
     loadSettings();
   }, []);
 
-  // Save everything
   const handleSave = async () => {
     try {
       setLoading(true);
 
-      // Save local preferences
       await AsyncStorage.setItem("preferredTone", tone);
       await AsyncStorage.setItem("notifDaily", dailyReminder.toString());
       await AsyncStorage.setItem("notifWeekly", weeklySummary.toString());
       await AsyncStorage.setItem("notifMotivation", motivationMsgs.toString());
 
-      // Merge profile safely (DO NOT OVERWRITE)
       const existing = await AsyncStorage.getItem("profile");
       let parsed = existing ? JSON.parse(existing) : {};
 
@@ -79,7 +72,6 @@ export default function SettingsScreen() {
 
       await AsyncStorage.setItem("profile", JSON.stringify(updatedProfile));
 
-      // Update backend
       const token = await AsyncStorage.getItem("accessToken");
 
       await fetch("http://127.0.0.1:8000/api/profile/update/", {
