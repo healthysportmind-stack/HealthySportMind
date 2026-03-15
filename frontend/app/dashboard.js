@@ -7,8 +7,8 @@ import { fetchRSS } from "../hooks/fetchRSS";
 import { useRouter } from "expo-router";
 import { getTodayCheckIn, getLastCheckIn } from "../services/api/checkinApi";
 import { getProfile } from "../services/api/profileApi";
-
-
+import { getPerformanceLogs } from "../services/api/performanceApi";
+import { BarChart } from "react-native-gifted-charts";
 export default function Dashboard({ user, profile }) {
   const router = useRouter();
   const isFocused = useIsFocused();
@@ -19,17 +19,18 @@ export default function Dashboard({ user, profile }) {
   const [localProfile, setLocalProfile] = useState(null);
   const [localUser, setLocalUser] = useState(null);
   const [tokenready, setTokenReady] = useState(false);
+  const [performanceLogs, setPerformanceLogs] = useState([]);
 
   async function loadLastCheckIn() {
-        try {
-          const data = await getLastCheckIn();
-          console.log("LAST CHECK-IN RAW RESPONSE:", data);
-          setLastCheckIn(data);
-        } catch (err) {
-          console.error("Last check-in fetch error:", err);
-        }
-      }
-  
+    try {
+      const data = await getLastCheckIn();
+      console.log("LAST CHECK-IN RAW RESPONSE:", data);
+      setLastCheckIn(data);
+    } catch (err) {
+      console.error("Last check-in fetch error:", err);
+    }
+  }
+
   async function reloadProfile() {
     try {
       const data = await getProfile();
@@ -41,15 +42,24 @@ export default function Dashboard({ user, profile }) {
   }
 
 
-    async function loadCheckIn() {
-      try {
-        const data = await getTodayCheckIn();
-        console.log("TODAY CHECK-IN RAW:", data);
-        setTodayCheckIn(data);
-      } catch (err) {
-        console.error("Check-in fetch error:", err);
-      }
+  async function loadCheckIn() {
+    try {
+      const data = await getTodayCheckIn();
+      console.log("TODAY CHECK-IN RAW:", data);
+      setTodayCheckIn(data);
+    } catch (err) {
+      console.error("Check-in fetch error:", err);
     }
+  }
+
+  async function loadPerformanceLogs() {
+    try {
+      const data = await getPerformanceLogs();
+      setPerformanceLogs(data || []);
+    } catch (err) {
+      console.error("Performance logs fetch error:", err);
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -82,6 +92,7 @@ export default function Dashboard({ user, profile }) {
       loadCheckIn();
       loadLastCheckIn();
       reloadProfile();
+      loadPerformanceLogs();
     }
   }, [isFocused]);
 
@@ -106,11 +117,11 @@ export default function Dashboard({ user, profile }) {
           </TouchableOpacity>
 
 
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Log Out</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
 
       {/* Main Card */}
       <View style={styles.card}>
@@ -135,27 +146,27 @@ export default function Dashboard({ user, profile }) {
           {/* Daily Check-In */}
           <View style={styles.infoCard}>
             <Text style={styles.cardTitle}>Daily Check‑In</Text>
-          {todayCheckIn?.exists ? (
-            <View>
-              <Text style={styles.cardSubtitle}>You checked in today!</Text>
+            {todayCheckIn?.exists ? (
+              <View>
+                <Text style={styles.cardSubtitle}>You checked in today!</Text>
 
-              {todayCheckIn.checkin?.post_message && (
-                <Text style={styles.cardSubtitle}>
-                  {todayCheckIn.checkin.post_message}
+                {todayCheckIn.checkin?.post_message && (
+                  <Text style={styles.cardSubtitle}>
+                    {todayCheckIn.checkin.post_message}
+                  </Text>
+                )}
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.checkInButton}
+                onPress={() => router.push("/checkin")}
+              >
+                <Text style={styles.checkInButtonText}>
+                  Complete today’s check‑in
                 </Text>
-              )}
-            </View>
-          ) : (
-            <TouchableOpacity
-              style={styles.checkInButton}
-              onPress={() => router.push("/checkin")}
-            >
-              <Text style={styles.checkInButtonText}>
-                Complete today’s check‑in
-              </Text>
-            </TouchableOpacity>
-          )}
-                    </View>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* Last Check-In */}
           <View style={styles.infoCard}>
@@ -191,7 +202,76 @@ export default function Dashboard({ user, profile }) {
               Your consistency metrics will appear here.
             </Text>
           </View>
+
+          {/* Performance Tracker Button */}
+          <View style={styles.infoCard}>
+            <Text style={styles.cardTitle}>Performance Tracker</Text>
+            <Text style={styles.cardSubtitle}>
+              Log how your mood impacts your game.
+            </Text>
+            <TouchableOpacity
+              style={[styles.checkInButton, { marginTop: 10 }]}
+              onPress={() => router.push("/performance-tracker")}
+            >
+              <Text style={styles.checkInButtonText}>
+                Log Performance
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
+      </View>
+
+      {/* --- PERFORMANCE CHART SECTION --- */}
+      <View style={styles.newsCard}>
+        <Text style={styles.sectionTitle}>Mood & Performance Trend</Text>
+        {performanceLogs && performanceLogs.length > 0 ? (
+          <View style={{ marginTop: 20, marginBottom: 20 }}>
+            <BarChart
+              stackData={performanceLogs.map((log) => {
+                const totalRating = log.performance_rating || 0;
+                const moods = Array.isArray(log.moods) && log.moods.length > 0 ? log.moods : ["Unspecified"];
+                const stackHeight = totalRating / moods.length;
+
+                const moodColors = {
+                  Happy: "#FFD700",
+                  Sad: "#4682B4",
+                  Mad: "#DC143C",
+                  Stressed: "#FF8C00",
+                  Calm: "#87CEFA",
+                  Relaxed: "#98FB98",
+                  Anxious: "#DDA0DD",
+                  Depressed: "#708090",
+                  Focused: "#32CD32",
+                  Excited: "#FF4500",
+                  Unspecified: "#CCC"
+                };
+
+                return {
+                  stacks: moods.map((m) => ({
+                    value: stackHeight,
+                    color: moodColors[m] || "#CCC"
+                  })),
+                  label: new Date(log.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+                };
+              })}
+              barWidth={35}
+              spacing={20}
+              noOfSections={5}
+              maxValue={100}
+              showLegend
+              legendData={[
+                { name: "Happy", color: "#FFD700" },
+                { name: "Sad", color: "#4682B4" },
+                { name: "Focused", color: "#32CD32" },
+                { name: "Stressed", color: "#FF8C00" }
+              ]}
+              yAxisThickness={0}
+              xAxisThickness={1}
+            />
+          </View>
+        ) : (
+          <Text style={styles.cardSubtitle}>Log your performance to see the chart.</Text>
+        )}
       </View>
 
       {/* News Feed */}

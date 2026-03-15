@@ -46,3 +46,13 @@ class Profile(models.Model):
     goals = models.TextField(blank=True)
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+class PerformanceLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="performance_logs")
+    moods = models.JSONField(default=list)
+    performance_rating = models.IntegerField()
+    comments = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.created_at.date()} - Rating: {self.performance_rating}"
