@@ -225,50 +225,76 @@ export default function Dashboard({ user, profile }) {
       <View style={styles.newsCard}>
         <Text style={styles.sectionTitle}>Mood & Performance Trend</Text>
         {performanceLogs && performanceLogs.length > 0 ? (
-          <View style={{ marginTop: 20, marginBottom: 20 }}>
-            <BarChart
-              stackData={performanceLogs.map((log) => {
-                const totalRating = log.performance_rating || 0;
+          (() => {
+            const moodColors = {
+              Happy: "#FFD700",
+              Sad: "#4682B4",
+              Mad: "#DC143C",
+              Stressed: "#FF8C00",
+              Calm: "#87CEFA",
+              Relaxed: "#98FB98",
+              Anxious: "#DDA0DD",
+              Depressed: "#708090",
+              Focused: "#32CD32",
+              Excited: "#FF4500",
+              Unspecified: "#CCC"
+            };
+
+            const stackData = performanceLogs.map((log) => {
+              const totalRating = log.performance_rating || 0;
+              const moods = Array.isArray(log.moods) && log.moods.length > 0 ? log.moods : ["Unspecified"];
+              const stackHeight = totalRating / moods.length;
+
+              return {
+                stacks: moods.map((m) => ({
+                  value: stackHeight,
+                  color: moodColors[m] || "#CCC"
+                })),
+                label: new Date(log.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+              };
+            });
+
+            // Get unique reported moods dynamically
+            const reportedMoods = Array.from(new Set(
+              performanceLogs.reduce((acc, log) => {
                 const moods = Array.isArray(log.moods) && log.moods.length > 0 ? log.moods : ["Unspecified"];
-                const stackHeight = totalRating / moods.length;
+                return acc.concat(moods);
+              }, [])
+            ));
 
-                const moodColors = {
-                  Happy: "#FFD700",
-                  Sad: "#4682B4",
-                  Mad: "#DC143C",
-                  Stressed: "#FF8C00",
-                  Calm: "#87CEFA",
-                  Relaxed: "#98FB98",
-                  Anxious: "#DDA0DD",
-                  Depressed: "#708090",
-                  Focused: "#32CD32",
-                  Excited: "#FF4500",
-                  Unspecified: "#CCC"
-                };
+            const chartLegendData = reportedMoods.map(mood => ({
+              name: mood,
+              color: moodColors[mood] || "#CCC"
+            }));
 
-                return {
-                  stacks: moods.map((m) => ({
-                    value: stackHeight,
-                    color: moodColors[m] || "#CCC"
-                  })),
-                  label: new Date(log.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-                };
-              })}
-              barWidth={35}
-              spacing={20}
-              noOfSections={5}
-              maxValue={100}
-              showLegend
-              legendData={[
-                { name: "Happy", color: "#FFD700" },
-                { name: "Sad", color: "#4682B4" },
-                { name: "Focused", color: "#32CD32" },
-                { name: "Stressed", color: "#FF8C00" }
-              ]}
-              yAxisThickness={0}
-              xAxisThickness={1}
-            />
-          </View>
+            return (
+              <View style={{ marginTop: 20, marginBottom: 20 }}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={{ paddingRight: 20 }}>
+                    <BarChart
+                      stackData={stackData}
+                      barWidth={35}
+                      spacing={20}
+                      initialSpacing={25}
+                      endSpacing={45}
+                      noOfSections={5}
+                      maxValue={100}
+                      yAxisThickness={0}
+                      xAxisThickness={1}
+                    />
+                  </View>
+                </ScrollView>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 20, paddingHorizontal: 10 }}>
+                  {chartLegendData.map((legendItem, index) => (
+                    <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15, marginBottom: 10 }}>
+                      <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: legendItem.color, marginRight: 5 }} />
+                      <Text style={{ fontSize: 12, color: '#333' }}>{legendItem.name}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            );
+          })()
         ) : (
           <Text style={styles.cardSubtitle}>Log your performance to see the chart.</Text>
         )}
