@@ -1,18 +1,24 @@
+import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BASE_URL = "http://127.0.0.1:8000/api/profile";
+const API_URL = "http://127.0.0.1:8000";
 
-async function authHeaders() {
-  const token = await AsyncStorage.getItem("accessToken");
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
+async function getToken() {
+  return await AsyncStorage.getItem("accessToken");
 }
 
 export async function getProfile() {
-  const res = await fetch(`${BASE_URL}/me/`, {
-    headers: await authHeaders(),
-  });
-  return res.json();
+  const token = await getToken();
+
+  try {
+    const res = await axios.get(`${API_URL}/api/profile/me/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return res.data;
+  } catch (err) {
+    throw err.response?.data || { error: "Unknown error" };
+  }
 }

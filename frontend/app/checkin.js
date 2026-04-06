@@ -52,13 +52,28 @@ export default function CheckInScreen() {
     router.replace("/dashboard");
 
   } catch (err) {
-    Toast.show({
-      type: "error",
-      text1: "Error",
-      text2: "Something went wrong.",
-    });
-    console.log(err);
-  } finally {
+  console.log("CHECK-IN ERROR:", err);
+
+  let message = "Check-in failed.";
+
+  if (typeof err === "object" && err !== null) {
+    const firstKey = Object.keys(err)[0];
+    const firstValue = err[firstKey];
+
+    if (Array.isArray(firstValue)) {
+      message = firstValue[0];
+    } else if (typeof firstValue === "string") {
+      message = firstValue;
+    }
+  }
+
+  Toast.show({
+    type: "error",
+    text1: "Error",
+    text2: message,
+  });
+}
+ finally {
     setLoading(false);
   }
 };
