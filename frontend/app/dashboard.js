@@ -284,7 +284,7 @@ export default function Dashboard({ user, profile }) {
                     />
                   </View>
                 </ScrollView>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 20, paddingHorizontal: 10 }}>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', marginTop: 20 }}>
                   {chartLegendData.map((legendItem, index) => (
                     <View key={index} style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15, marginBottom: 10 }}>
                       <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: legendItem.color, marginRight: 5 }} />
