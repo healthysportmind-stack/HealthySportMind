@@ -56,3 +56,18 @@ class PerformanceLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.created_at.date()} - Rating: {self.performance_rating}"
+
+class Feedback(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    checkin = models.ForeignKey(
+        CheckIn,
+        on_delete=models.CASCADE,
+        null=True,
+        blank = True
+    )
+    category = models.CharField(max_length=50)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback for {self.user.email} on {self.checkin.created_at.date()}"

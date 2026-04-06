@@ -16,9 +16,12 @@ from rest_framework.permissions import AllowAny
 from django.utils import timezone
 from api.utils.ai import rewrite_message_tone
 
-from .models import Profile, CheckIn
+from .models import Profile, CheckIn, Feedback
 from .serializers.profileSerializer import ProfileSerializer
+from .serializers.checkinSerializers import FeedbackSerializer
 from .services.message_generator import generate_post_checkin_message
+from datetime import datetime, time
+from django.utils import timezone
 
 
 class RegisterView(APIView):
@@ -138,6 +141,24 @@ class SubmitCheckInView(APIView):
                 final_message = base_message
             checkin.post_message = final_message
             checkin.save()
+
+
+
+            feedback_text = request.data.get("feedback_message")
+            feedback_category = request.data.get("feedback_category")
+
+            saved_feedback = None
+
+            if feedback_text:
+                feedback_serializer = FeedbackSerializer(data={
+                    "checkin": checkin.id,
+                    "message": feedback_text,
+                    "category": feedback_category or "other",
+                })
+                feedback_serializer.is_valid(raise_exception=True)
+                saved_feedback = feedback_serializer.save(user=request.user)
+
+
             return Response({
                 "checkin": CheckInSerializer(checkin).data,
                 "message": final_message
@@ -151,19 +172,24 @@ class TodayCheckInView(APIView):
 
     def get(self, request):
         today = timezone.localdate()
+        start = timezone.make_aware(datetime.combine(today, time.min))
+        end = timezone.make_aware(datetime.combine(today, time.max))
         checkin = CheckIn.objects.filter(
             user=request.user,
-            created_at__date=today
+            created_at__range=(start, end)
         ).first()
 
         if not checkin:
             return Response({"exists": False})
 
+        feedback = Feedback.objects.filter(checkin=checkin).first()
+        feedback_data = FeedbackSerializer(feedback).data if feedback else None
+
         return Response({
             "exists": True,
-            "checkin": CheckInSerializer(checkin).data
+            "checkin": CheckInSerializer(checkin).data,
+            "feedback": feedback_data
         })
-
 
 class LastCheckInView(APIView):
     permission_classes = [IsAuthenticated]
@@ -174,9 +200,13 @@ class LastCheckInView(APIView):
         if not last:
             return Response({"exists": False})
 
+        feedback = Feedback.objects.filter(checkin=last).first()
+        feedback_data = FeedbackSerializer(feedback).data if feedback else None
+
         return Response({
             "exists": True,
-            "checkin": CheckInSerializer(last).data
+            "checkin": CheckInSerializer(last).data,
+            "feedback": feedback_data
         })
 
 
@@ -194,3 +224,18 @@ class ProfileUpdateView(generics.UpdateAPIView):
 
     def get_object(self):
         return self.request.user.profile
+
+# views.py
+
+class SubmitFeedbackView(APIView):
+    def post(self, request):
+        serializer = FeedbackSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        feedback = serializer.save(user=request.user)
+
+        return Response({
+            "status": "success",
+            "feedback": FeedbackSerializer(feedback).data
+        })
+
