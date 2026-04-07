@@ -65,7 +65,12 @@ class Feedback(models.Model):
         null=True,
         blank = True
     )
+    ai_used = models.BooleanField(default = True)
     category = models.CharField(max_length=50)
+    feedback_type = models.CharField(max_length = 20,choices = [
+        ("short_term", "Short Term"),
+        ("long_term", "Long Term"),
+    ])
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 

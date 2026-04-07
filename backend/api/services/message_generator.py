@@ -12,4 +12,5 @@ def generate_post_checkin_message(checkin):
     }
 
     category = classify_state(signals)
-    return random.choice(MESSAGES[category])
+    message = random.choice(MESSAGES[category])
+    return message,category

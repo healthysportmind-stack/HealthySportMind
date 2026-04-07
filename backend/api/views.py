@@ -130,33 +130,29 @@ class SubmitCheckInView(APIView):
         if serializer.is_valid():
             checkin = serializer.save(user=request.user)
 
-            base_message = generate_post_checkin_message(checkin)
+            base_message, category = generate_post_checkin_message(checkin)
             #checkin.post_message=base_message # this is to test without ai. comment out the next 6 lines.
             #change base final_message to base_message in line 136
             tone=getattr(request.user.profile, "preferred_tone", "neutral")
             try:
                 final_message=rewrite_message_tone(base_message,tone)
+                ai_used = True
             except Exception as e:
                 print("AI REWRITE ERROR:", e)
                 final_message = base_message
+                ai_used = False
             checkin.post_message = final_message
             checkin.save()
 
 
-
-            feedback_text = request.data.get("feedback_message")
-            feedback_category = request.data.get("feedback_category")
-
-            saved_feedback = None
-
-            if feedback_text:
-                feedback_serializer = FeedbackSerializer(data={
-                    "checkin": checkin.id,
-                    "message": feedback_text,
-                    "category": feedback_category or "other",
-                })
-                feedback_serializer.is_valid(raise_exception=True)
-                saved_feedback = feedback_serializer.save(user=request.user)
+            Feedback.objects.create(
+                user = request.user,
+                checkin = checkin,
+                ai_used = ai_used,
+                category = category,
+                feedback_type = "short_term",
+                message = final_message,
+            )
 
 
             return Response({
