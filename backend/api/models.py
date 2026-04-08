@@ -31,6 +31,8 @@ class Profile(models.Model):
     )
     name = models.CharField(max_length=100, blank=True)
     sport = models.CharField(max_length=100, blank=True)
+    notif_weekly=models.BooleanField(default=True)
+    notif_monthly = models.BooleanField(default=True)
     experience_level = models.CharField(
         max_length=20,
         choices=[

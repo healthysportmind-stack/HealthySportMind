@@ -1,7 +1,6 @@
 from celery import shared_task
 from django.contrib.auth import get_user_model
 from api.services.long_term import generate_long_term_insight
-from api.services.message_generator import rewrite_message_tone
 from api.models import Feedback
 
 User = get_user_model()
@@ -9,6 +8,8 @@ User = get_user_model()
 @shared_task
 def run_weekly_checkins():
     for user in User.objects.all():
+        if not profile.notif_weekly:
+            continue
         base_message, category = generate_long_term_insight(user, 7)
 
         tone = getattr(user.profile, "preferred_tone", "neutral")
@@ -31,6 +32,8 @@ def run_weekly_checkins():
 @shared_task
 def run_monthly_checkins():
     for user in User.objects.all():
+        if not profile.notif_monthly:
+            continue
         base_message, category = generate_long_term_insight(user, 30)
 
         tone = getattr(user.profile, "preferred_tone", "neutral")

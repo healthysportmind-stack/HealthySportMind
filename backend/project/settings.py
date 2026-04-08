@@ -159,10 +159,14 @@ SIMPLE_JWT = {
 CELERY_BEAT_SCHEDULE = {
     "weekly-checkins": {
         "task": "api.tasks.run_weekly_checkins",
-        "schedule": crontab(hour=23, minute=59, day_of_week="sun"),
+        "schedule": 30.0,
+        #"schedule": crontab(hour=23, minute=59, day_of_week="sun"),
     },
     "monthly-checkins": {
         "task": "api.tasks.run_monthly_checkins",
-        "schedule": crontab(hour=23, minute=59, day_of_month="1"),
+        "schedule": 30.0,
+        #"schedule": crontab(hour=23, minute=59, day_of_month="1"),
     },
 }
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/0"
+CELERY_RESULT_BACKEND = "redis://127.0.0.1:6379/0"

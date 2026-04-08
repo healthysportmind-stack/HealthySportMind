@@ -19,9 +19,8 @@ export default function SettingsScreen() {
 
   const [tone, setTone] = useState("neutral");
 
-  const [dailyReminder, setDailyReminder] = useState(false);
   const [weeklySummary, setWeeklySummary] = useState(false);
-  const [motivationMsgs, setMotivationMsgs] = useState(false);
+  const [monthlySummary, setMonthlySummary] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
@@ -30,22 +29,22 @@ export default function SettingsScreen() {
       const storedProfile = await AsyncStorage.getItem("profile");
       const storedTone = await AsyncStorage.getItem("preferredTone");
 
-      const storedDaily = await AsyncStorage.getItem("notifDaily");
       const storedWeekly = await AsyncStorage.getItem("notifWeekly");
-      const storedMotivation = await AsyncStorage.getItem("notifMotivation");
+      const storedMonthly = await AsyncStorage.getItem("notifMonthly");
 
       if (storedProfile) {
         const p = JSON.parse(storedProfile);
         setName(p.name || "");
         setSport(p.sport || "");
         if (p.preferred_tone) setTone(p.preferred_tone);
+        if (typeof p.notif_weekly === "boolean") setWeeklySummary(p.notif_weekly);
+        if (typeof p.notif_monthly === "boolean") setMonthlySummary(p.notif_monthly);
       }
 
       if (storedTone) setTone(storedTone);
 
-      setDailyReminder(storedDaily === "true");
       setWeeklySummary(storedWeekly === "true");
-      setMotivationMsgs(storedMotivation === "true");
+      setMonthlySummary(storedMonthly === "true");
     }
 
     loadSettings();
@@ -56,18 +55,19 @@ export default function SettingsScreen() {
       setLoading(true);
 
       await AsyncStorage.setItem("preferredTone", tone);
-      await AsyncStorage.setItem("notifDaily", dailyReminder.toString());
       await AsyncStorage.setItem("notifWeekly", weeklySummary.toString());
-      await AsyncStorage.setItem("notifMotivation", motivationMsgs.toString());
+      await AsyncStorage.setItem("notifMonthly", monthlySummary.toString());
 
       const existing = await AsyncStorage.getItem("profile");
       let parsed = existing ? JSON.parse(existing) : {};
 
       const updatedProfile = {
-        ...parsed, // keep all existing fields
+        ...parsed,
         name,
         sport,
         preferred_tone: tone,
+        notif_weekly: weeklySummary,
+        notif_monthly: monthlySummary,
       };
 
       await AsyncStorage.setItem("profile", JSON.stringify(updatedProfile));
@@ -84,6 +84,8 @@ export default function SettingsScreen() {
           name,
           sport,
           preferred_tone: tone,
+          notif_weekly: weeklySummary,
+          notif_monthly: monthlySummary,
         }),
       });
 
@@ -189,17 +191,6 @@ export default function SettingsScreen() {
             marginBottom: 15,
           }}
         >
-          <Text>Daily Check‑In Reminder</Text>
-          <Switch value={dailyReminder} onValueChange={setDailyReminder} />
-        </View>
-
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginBottom: 15,
-          }}
-        >
           <Text>Weekly Summary</Text>
           <Switch value={weeklySummary} onValueChange={setWeeklySummary} />
         </View>
@@ -210,8 +201,8 @@ export default function SettingsScreen() {
             justifyContent: "space-between",
           }}
         >
-          <Text>Motivation Messages</Text>
-          <Switch value={motivationMsgs} onValueChange={setMotivationMsgs} />
+          <Text>Monthly Summary</Text>
+          <Switch value={monthlySummary} onValueChange={setMonthlySummary} />
         </View>
       </View>
 
