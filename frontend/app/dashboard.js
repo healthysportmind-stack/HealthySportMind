@@ -299,6 +299,20 @@ export default function Dashboard({ user, profile }) {
           <Text style={styles.cardSubtitle}>Log your performance to see the chart.</Text>
         )}
       </View>
+      {/* Long-Term Insights */}
+      <View style={styles.infoCard}>
+        <Text style={styles.cardTitle}>Long‑Term Insights</Text>
+        <Text style={styles.cardSubtitle}>
+          View your weekly and monthly mental performance trends.
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.checkInButton, { marginTop: 10 }]}
+          onPress={() => router.push("/LongTermInsights")}
+        >
+          <Text style={styles.checkInButtonText}>Open Insights</Text>
+        </TouchableOpacity>
+      </View>
 
       {/* News Feed */}
       <View style={styles.newsCard}>

@@ -22,6 +22,7 @@ from .serializers.checkinSerializers import FeedbackSerializer
 from .services.message_generator import generate_post_checkin_message
 from datetime import datetime, time
 from django.utils import timezone
+from .services.long_term import generate_long_term_insight
 
 
 class RegisterView(APIView):
@@ -234,4 +235,78 @@ class SubmitFeedbackView(APIView):
             "status": "success",
             "feedback": FeedbackSerializer(feedback).data
         })
+
+class WeeklyCheckInView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+
+        base_message, category = generate_long_term_insight(request.user, 7)
+
+        tone = getattr(request.user.profile, "preferred_tone", "neutral")
+        try:
+            final_message = rewrite_message_tone(base_message, tone)
+            ai_used = True
+        except:
+            final_message = base_message
+            ai_used = False
+
+        Feedback.objects.create(
+            user=request.user,
+            ai_used=ai_used,
+            category=category,
+            feedback_type="long_term",
+            message=final_message,
+            window_days=7,
+        )
+
+        return Response({
+            "message": final_message,
+            "category": category,
+            "window_days": 7,
+        })
+
+class MonthlyCheckInView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        base_message, category = generate_long_term_insight(request.user, 30)
+
+        tone = getattr(request.user.profile, "preferred_tone", "neutral")
+        try:
+            final_message = rewrite_message_tone(base_message, tone)
+            ai_used = True
+        except:
+            final_message = base_message
+            ai_used = False
+
+        Feedback.objects.create(
+            user=request.user,
+            ai_used=ai_used,
+            category=category,
+            feedback_type="long_term",
+            message=final_message,
+            window_days=30,
+        )
+
+        return Response({
+            "message": final_message,
+            "category": category,
+            "window_days": 30,
+        })
+
+class LongTermInsightsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        print("LONG TERM VIEW HIT")
+        print("AUTH USER:", request.user)
+        feedbacks = Feedback.objects.filter(
+            user=request.user,
+            feedback_type="long_term"
+        ).order_by("-created_at")
+
+        serializer = FeedbackSerializer(feedbacks, many=True)
+        return Response(serializer.data)
+
 

@@ -14,6 +14,7 @@ from pathlib import Path
 import dj_database_url
 import os
 from dotenv import load_dotenv
+from celery.schedules import crontab
 
 load_dotenv()
 
@@ -153,4 +154,15 @@ from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+}
+
+CELERY_BEAT_SCHEDULE = {
+    "weekly-checkins": {
+        "task": "api.tasks.run_weekly_checkins",
+        "schedule": crontab(hour=23, minute=59, day_of_week="sun"),
+    },
+    "monthly-checkins": {
+        "task": "api.tasks.run_monthly_checkins",
+        "schedule": crontab(hour=23, minute=59, day_of_month="1"),
+    },
 }

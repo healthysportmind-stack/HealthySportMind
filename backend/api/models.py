@@ -67,6 +67,7 @@ class Feedback(models.Model):
     )
     ai_used = models.BooleanField(default = True)
     category = models.CharField(max_length=50)
+    window_days = models.IntegerField(null=True, blank=True)
     feedback_type = models.CharField(max_length = 20,choices = [
         ("short_term", "Short Term"),
         ("long_term", "Long Term"),
@@ -75,4 +76,7 @@ class Feedback(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Feedback for {self.user.email} on {self.checkin.created_at.date()}"
+        if self.checkin is not None:
+            return f"{self.user} | Check-in {self.checkin.created_at:%Y-%m-%d}"
+        return f"{self.user} | Long-term: {self.category}"
+
