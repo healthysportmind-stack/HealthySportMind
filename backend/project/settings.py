@@ -35,7 +35,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-default-development
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [ "https://healthysportmind-git-358530944608.us-south1.run.app", ]
+ALLOWED_HOSTS = [ "*" ]
 
 
 # Application definition
