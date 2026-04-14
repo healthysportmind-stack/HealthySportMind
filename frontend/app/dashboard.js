@@ -9,6 +9,8 @@ import { getTodayCheckIn, getLastCheckIn } from "../services/api/checkinApi";
 import { getProfile } from "../services/api/profileApi";
 import { getPerformanceLogs } from "../services/api/performanceApi";
 import { BarChart } from "react-native-gifted-charts";
+const logo = require("../assets/images/Logo.png");
+
 export default function Dashboard({ user, profile }) {
   const router = useRouter();
   const isFocused = useIsFocused();
@@ -106,7 +108,14 @@ export default function Dashboard({ user, profile }) {
     <ScrollView style={styles.container}>
       {/* Top Bar */}
       <View style={styles.topBar}>
-        <Text style={styles.title}>HealthySportMind</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Image
+            source={logo}
+            style={{ width: 40, height: 40 }}
+            resizeMode="contain"
+          />
+          <Text style={styles.title}>HealthySportMind</Text>
+        </View>
 
         <View style={{ flexDirection: "row", gap: 10 }}>
           <TouchableOpacity
@@ -188,6 +197,9 @@ export default function Dashboard({ user, profile }) {
                 </Text>
                 <Text style={styles.cardSubtitle}>
                   {new Date(lastCheckIn.checkin.created_at).toLocaleString()}
+                </Text>
+                <Text style={styles.cardSubtitle}>
+                  {lastCheckIn.checkin.post_message}
                 </Text>
               </>
             ) : (
