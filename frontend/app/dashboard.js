@@ -198,9 +198,14 @@ export default function Dashboard({ user, profile }) {
                 <Text style={styles.cardSubtitle}>
                   {new Date(lastCheckIn.checkin.created_at).toLocaleString()}
                 </Text>
-                <Text style={styles.cardSubtitle}>
-                  {lastCheckIn.checkin.post_message}
-                </Text>
+                {lastCheckIn.checkin?.post_message && (
+                  {typeof lastCheckIn.checkin?.post_message === "string" &&
+                    lastCheckIn.checkin.post_message.trim() !== "" && (
+                      <Text style={styles.cardSubtitle}>
+                        {lastCheckIn.checkin.post_message}
+                      </Text>
+                  )}
+                )}
               </>
             ) : (
               <Text style={styles.cardSubtitle}>No check‑ins yet</Text>
@@ -266,7 +271,6 @@ export default function Dashboard({ user, profile }) {
               };
             });
 
-            // Get unique reported moods dynamically
             const reportedMoods = Array.from(new Set(
               performanceLogs.reduce((acc, log) => {
                 const moods = Array.isArray(log.moods) && log.moods.length > 0 ? log.moods : ["Unspecified"];
