@@ -79,7 +79,7 @@ export default function CheckInScreen() {
 };
 
 return (
-  <ScrollView style={{ padding: 20 }}>
+  <ScrollView style={{ padding: 20 , backgroundColor: "White"}}>
       <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 20 }}>
         Daily Check‑In
       </Text>

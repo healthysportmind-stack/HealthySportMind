@@ -7,10 +7,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import { registerUser } from "../services/api/authApi";
 import styles from "../styles/authStyles";
-
+const logo = require("../assets/images/Logo.png");
 export default function RegisterScreen() {
   const router = useRouter();
   const [name, setName] = useState("");
@@ -64,6 +65,18 @@ export default function RegisterScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.card}>
+
+        <Image
+          source={logo}
+          style={{
+            width: 360,
+            height: 360,
+            alignSelf: "center",
+            marginBottom: 20,
+          }}
+          resizeMode="contain"
+        />
+
         <Text style={styles.title}>Create Account</Text>
 
         <TextInput

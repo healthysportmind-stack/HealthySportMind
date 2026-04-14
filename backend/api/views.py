@@ -13,7 +13,7 @@ from .serializers.checkinSerializers import CheckInSerializer
 from .models import CheckIn
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
-from django.utils import timezone
+from django.utils import timezone, now
 from api.utils.ai import rewrite_message_tone
 
 from .models import Profile, CheckIn, Feedback
@@ -192,7 +192,15 @@ class LastCheckInView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        last = CheckIn.objects.filter(user=request.user).order_by("-created_at").first()
+        today = now().date()
+
+        last = (
+            CheckIn.objects
+            .filter(user=request.user)
+            .exclude(created_at__date=today)
+            .order_by("-created_at")
+            .first()
+        )
 
         if not last:
             return Response({"exists": False})
@@ -205,6 +213,7 @@ class LastCheckInView(APIView):
             "checkin": CheckInSerializer(last).data,
             "feedback": feedback_data
         })
+
 
 
 class ProfileMeView(generics.RetrieveAPIView):

@@ -10,10 +10,10 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginUser } from "../services/api/authApi";
 import styles from "../styles/authStyles";
-
+import { Image } from "react-native";
+const logo = require("../assets/images/Logo.png");
 export default function LoginScreen() {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -47,7 +47,18 @@ export default function LoginScreen() {
       contentContainerStyle={styles.container}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={styles.card}>
+
+      <View style={styles.card}>.
+        <Image
+        source={logo}
+        style={{
+          width: 360,
+          height: 360,
+          alignSelf: "center",
+          marginBottom: 20,
+        }}
+        resizeMode="contain"
+      />
         <Text style={styles.title}>Login</Text>
 
         <TextInput
