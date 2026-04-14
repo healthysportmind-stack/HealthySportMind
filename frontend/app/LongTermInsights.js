@@ -33,7 +33,7 @@ export default function LongTermInsightsScreen() {
   const fetchInsights = async (token) => {
     try {
       const res = await axios.get(
-        "http://127.0.0.1:8000/api/checkins/insights/long-term/",
+        "https://healthysportmind-git-358530944608.us-south1.run.app/api/checkins/insights/long-term/",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

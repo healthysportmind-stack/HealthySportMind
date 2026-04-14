@@ -74,7 +74,7 @@ export default function SettingsScreen() {
 
       const token = await AsyncStorage.getItem("accessToken");
 
-      await fetch("http://127.0.0.1:8000/api/profile/update/", {
+      await fetch("https://healthysportmind-git-358530944608.us-south1.run.app/api/profile/update/", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

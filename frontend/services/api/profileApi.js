@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://healthysportmind-git-358530944608.us-south1.run.app/";
 
 async function getToken() {
   return await AsyncStorage.getItem("accessToken");

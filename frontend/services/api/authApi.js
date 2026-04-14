@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "https://healthysportmind-git-358530944608.us-south1.run.app/";
 
 export const registerUser = async (data) => {
   return axios.post(`${API_URL}/auth/register/`, data, {
