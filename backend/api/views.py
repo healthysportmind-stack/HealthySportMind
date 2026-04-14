@@ -13,7 +13,8 @@ from .serializers.checkinSerializers import CheckInSerializer
 from .models import CheckIn
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
-from django.utils import timezone, now
+from django.utils import timezone
+from django.utils.timezone import now
 from api.utils.ai import rewrite_message_tone
 
 from .models import Profile, CheckIn, Feedback
@@ -21,7 +22,6 @@ from .serializers.profileSerializer import ProfileSerializer
 from .serializers.checkinSerializers import FeedbackSerializer
 from .services.message_generator import generate_post_checkin_message
 from datetime import datetime, time
-from django.utils import timezone
 from .services.long_term import generate_long_term_insight
 
 
