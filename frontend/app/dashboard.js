@@ -198,14 +198,13 @@ export default function Dashboard({ user, profile }) {
                 <Text style={styles.cardSubtitle}>
                   {new Date(lastCheckIn.checkin.created_at).toLocaleString()}
                 </Text>
-                {lastCheckIn.checkin?.post_message && (
-                  {typeof lastCheckIn.checkin?.post_message === "string" &&
-                    lastCheckIn.checkin.post_message.trim() !== "" && (
-                      <Text style={styles.cardSubtitle}>
-                        {lastCheckIn.checkin.post_message}
-                      </Text>
-                  )}
+                {typeof lastCheckIn.checkin?.post_message === "string" &&
+                  lastCheckIn.checkin.post_message.trim() !== "" && (
+                    <Text style={styles.cardSubtitle}>
+                      {lastCheckIn.checkin.post_message}
+                    </Text>
                 )}
+
               </>
             ) : (
               <Text style={styles.cardSubtitle}>No check‑ins yet</Text>
